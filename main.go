@@ -418,3 +418,26 @@ func (w *Warpcast) LikeCast(castHash string) (*ReactionsPutResult, error) {
 
 	return &result.Result, nil
 }
+
+// DeleteCastLike removes a like from a cast
+func (w *Warpcast) DeleteCastLike(castHash string) (*StatusContent, error) {
+	body := struct {
+		CastHash string `json:"castHash"`
+	}{
+		CastHash: castHash,
+	}
+
+	resp, err := w.request("DELETE", "cast-likes", nil, body, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to delete cast like: %w", err)
+	}
+
+	var result struct {
+		Result StatusContent `json:"result"`
+	}
+	if err := json.Unmarshal(resp, &result); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal delete cast like response: %w", err)
+	}
+
+	return &result.Result, nil
+}
