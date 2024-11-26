@@ -418,3 +418,40 @@ func (w *Warpcast) LikeCast(castHash string) (*ReactionsPutResult, error) {
 
 	return &result.Result, nil
 }
+
+// CastContent represents the content of a cast
+type CastContent struct {
+	Hash      string    `json:"hash"`
+	ThreadHash string   `json:"threadHash"`
+	ParentHash string   `json:"parentHash,omitempty"`
+	Author    struct {
+		Fid       int    `json:"fid"`
+		Username  string `json:"username"`
+		DisplayName string `json:"displayName"`
+		PfpUrl    string `json:"pfpUrl"`
+	} `json:"author"`
+	Text      string    `json:"text"`
+	Timestamp int64     `json:"timestamp"`
+	// Add other fields as needed based on your API response
+}
+
+// GetCast retrieves a specific cast by its hash
+func (w *Warpcast) GetCast(hash string) (*CastContent, error) {
+	params := map[string]string{
+		"hash": hash,
+	}
+
+	resp, err := w.request("GET", "cast", params, nil, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get cast: %w", err)
+	}
+
+	var result struct {
+		Result CastContent `json:"result"`
+	}
+	if err := json.Unmarshal(resp, &result); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal cast response: %w", err)
+	}
+
+	return &result.Result, nil
+}
