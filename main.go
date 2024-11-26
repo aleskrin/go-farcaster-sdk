@@ -358,3 +358,35 @@ func (w *Warpcast) generateCustodyAuthHeader(authParams *AuthParams) (string, er
 	// This is a placeholder that should be replaced with proper signature generation
 	return fmt.Sprintf("Bearer %s", w.wallet.PrivateKey), nil
 }
+
+// ReactionsPutResult represents the result of liking a cast
+type ReactionsPutResult struct {
+	Like struct {
+		CastHash   string `json:"castHash"`
+		ReactorFid int    `json:"reactorFid"`
+		Timestamp  int64  `json:"timestamp"`
+	} `json:"like"`
+}
+
+// LikeCast likes a given cast
+func (w *Warpcast) LikeCast(castHash string) (*ReactionsPutResult, error) {
+	body := struct {
+		CastHash string `json:"castHash"`
+	}{
+		CastHash: castHash,
+	}
+
+	resp, err := w.request("PUT", "cast-likes", nil, body, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to like cast: %w", err)
+	}
+
+	var result struct {
+		Result ReactionsPutResult `json:"result"`
+	}
+	if err := json.Unmarshal(resp, &result); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal like cast response: %w", err)
+	}
+
+	return &result.Result, nil
+}
