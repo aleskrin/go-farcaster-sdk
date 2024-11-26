@@ -2,11 +2,15 @@ package farcaster
 
 import (
 	"bytes"
+	"crypto"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
+
+	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
 // LocalAccount represents a local wallet account
@@ -354,9 +358,33 @@ func (w *Warpcast) generateCustodyAuthHeader(authParams *AuthParams) (string, er
 	if w.wallet == nil {
 		return "", fmt.Errorf("wallet is required for custody auth")
 	}
-	// TODO: Implement actual custody signature logic
-	// This is a placeholder that should be replaced with proper signature generation
-	return fmt.Sprintf("Bearer %s", w.wallet.PrivateKey), nil
+
+	// Convert auth params to JSON
+	message, err := json.Marshal(authParams)
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal auth params: %w", err)
+	}
+
+	// Create the message hash (Keccak256)
+	messageHash := crypto.Keccak256Hash(message)
+
+	// Convert private key string to ECDSA private key
+	privateKeyECDSA, err := crypto.HexToECDSA(strings.TrimPrefix(w.wallet.PrivateKey, "0x"))
+	if err != nil {
+		return "", fmt.Errorf("invalid private key: %w", err)
+	}
+
+	// Sign the message hash
+	signature, err := crypto.Sign(messageHash.Bytes(), privateKeyECDSA)
+	if err != nil {
+		return "", fmt.Errorf("failed to sign message: %w", err)
+	}
+
+	// Format the signature as hex string
+	signatureHex := hexutil.Encode(signature)
+
+	// Create the custody authorization header
+	return fmt.Sprintf("Bearer %s", signatureHex), nil
 }
 
 // ReactionsPutResult represents the result of liking a cast
