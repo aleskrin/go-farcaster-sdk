@@ -2,6 +2,7 @@ package farcaster
 
 import (
 	"bytes"
+	"crypto"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -10,7 +11,6 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/ethereum/go-ethereum/crypto"
 )
 
 // LocalAccount represents a local wallet account
@@ -419,107 +419,38 @@ func (w *Warpcast) LikeCast(castHash string) (*ReactionsPutResult, error) {
 	return &result.Result, nil
 }
 
-// DeleteCastLike removes a like from a cast
-func (w *Warpcast) DeleteCastLike(castHash string) (*StatusContent, error) {
-	body := struct {
-		CastHash string `json:"castHash"`
-	}{
-		CastHash: castHash,
-	}
-
-	resp, err := w.request("DELETE", "cast-likes", nil, body, nil)
-	if err != nil {
-		return nil, fmt.Errorf("failed to delete cast like: %w", err)
-	}
-
-	var result struct {
-		Result StatusContent `json:"result"`
-	}
-	if err := json.Unmarshal(resp, &result); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal delete cast like response: %w", err)
-	}
-
-	return &result.Result, nil
-}
-
-// ApiUser represents a Farcaster user
-type ApiUser struct {
-	// Add relevant user fields based on your API response
-	Fid      int    `json:"fid"`
-	Username string `json:"username"`
+// CastContent represents a single cast
+type CastContent struct {
+	Hash      string    `json:"hash"`
+	ThreadHash string   `json:"threadHash"`
+	ParentHash *string  `json:"parentHash,omitempty"`
+	Author     ApiUser  `json:"author"`
+	Text      string    `json:"text"`
 	// Add other fields as needed
 }
 
-// IterableUsersResult represents a paginated list of users
-type IterableUsersResult struct {
-	Users  []ApiUser `json:"users"`
-	Cursor *string   `json:"cursor,omitempty"`
+// CastsResult represents a collection of casts
+type CastsResult struct {
+	Casts []CastContent `json:"casts"`
 }
 
-// GetCastRecasters retrieves the users who have recasted a given cast
-func (w *Warpcast) GetCastRecasters(castHash string, cursor *string, limit int) (*IterableUsersResult, error) {
-	users := []ApiUser{}
-	currentLimit := min(limit, 100)
-
+// GetAllCastsInThread retrieves all casts in a thread
+func (w *Warpcast) GetAllCastsInThread(threadHash string) (*CastsResult, error) {
 	params := map[string]string{
-		"castHash": castHash,
-		"limit":    fmt.Sprintf("%d", currentLimit),
-	}
-	if cursor != nil {
-		params["cursor"] = *cursor
+		"threadHash": threadHash,
 	}
 
-	for {
-		resp, err := w.request("GET", "cast-recasters", params, nil, nil)
-		if err != nil {
-			return nil, fmt.Errorf("failed to get cast recasters: %w", err)
-		}
-
-		var result struct {
-			Result struct {
-				Users []ApiUser `json:"users"`
-			} `json:"result"`
-			Next *struct {
-				Cursor string `json:"cursor"`
-			} `json:"next"`
-		}
-
-		if err := json.Unmarshal(resp, &result); err != nil {
-			return nil, fmt.Errorf("failed to unmarshal cast recasters response: %w", err)
-		}
-
-		if result.Result.Users != nil {
-			users = append(users, result.Result.Users...)
-		}
-
-		if result.Next == nil || len(users) >= limit {
-			break
-		}
-
-		params["cursor"] = result.Next.Cursor
+	resp, err := w.request("GET", "all-casts-in-thread", params, nil, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get thread casts: %w", err)
 	}
 
-	// Ensure we don't return more users than requested
-	if len(users) > limit {
-		users = users[:limit]
+	var result struct {
+		Result CastsResult `json:"result"`
+	}
+	if err := json.Unmarshal(resp, &result); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal thread casts response: %w", err)
 	}
 
-	var nextCursor *string
-	if len(users) == limit {
-		cursorValue := params["cursor"]
-		nextCursor = &cursorValue
-	}
-
-	return &IterableUsersResult{
-		Users:  users,
-		Cursor: nextCursor,
-	}, nil
-}
-
-// Helper function to find minimum of two integers
-func min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
+	return &result.Result, nil
 }
