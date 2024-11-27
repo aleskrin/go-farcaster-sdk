@@ -1,6 +1,6 @@
-# farcaster-go
+# go-farcaster-sdk
 
-🚀 **farcaster-go is a Go SDK ported from the popular Python package [`farcaster-py`](https://github.com/a16z/farcaster-py).**
+🚀 **go-farcaster-sdk is a Go SDK for farcaster ported from the Python package [`farcaster-py`](https://github.com/a16z/farcaster-py).**
 
 ## Examples
 
