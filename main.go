@@ -2,7 +2,6 @@ package farcaster
 
 import (
 	"bytes"
-	"crypto"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -11,6 +10,7 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/ethereum/go-ethereum/crypto"
 )
 
 // LocalAccount represents a local wallet account
