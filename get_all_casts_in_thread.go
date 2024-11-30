@@ -1,16 +1,17 @@
 package farcaster
 
 import (
-	"crypto"
+	"encoding/json"
+	"fmt"
 )
 
 // CastContent represents a single cast
 type CastContent struct {
-	Hash      string    `json:"hash"`
-	ThreadHash string   `json:"threadHash"`
-	ParentHash *string  `json:"parentHash,omitempty"`
-	Author     ApiUser  `json:"author"`
-	Text      string    `json:"text"`
+	Hash       string  `json:"hash"`
+	ThreadHash string  `json:"threadHash"`
+	ParentHash *string `json:"parentHash,omitempty"`
+	Author     ApiUser `json:"author"`
+	Text       string  `json:"text"`
 	// Add other fields as needed
 }
 

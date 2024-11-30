@@ -29,6 +29,8 @@ type Warpcast struct {
 	rotationDuration int64
 	client           *http.Client
 	baseHeaders      map[string]string
+	BaseURL          string
+	HTTPClient       *http.Client
 }
 
 // ConfigurationParams holds the configuration for the Warpcast client
@@ -417,22 +419,6 @@ func (w *Warpcast) LikeCast(castHash string) (*ReactionsPutResult, error) {
 	}
 
 	return &result.Result, nil
-}
-
-// CastContent represents the content of a cast
-type CastContent struct {
-	Hash      string    `json:"hash"`
-	ThreadHash string   `json:"threadHash"`
-	ParentHash string   `json:"parentHash,omitempty"`
-	Author    struct {
-		Fid       int    `json:"fid"`
-		Username  string `json:"username"`
-		DisplayName string `json:"displayName"`
-		PfpUrl    string `json:"pfpUrl"`
-	} `json:"author"`
-	Text      string    `json:"text"`
-	Timestamp int64     `json:"timestamp"`
-	// Add other fields as needed based on your API response
 }
 
 // GetCast retrieves a specific cast by its hash
