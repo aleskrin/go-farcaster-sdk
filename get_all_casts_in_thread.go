@@ -5,16 +5,6 @@ import (
 	"fmt"
 )
 
-// CastContent represents a single cast
-type CastContent struct {
-	Hash       string  `json:"hash"`
-	ThreadHash string  `json:"threadHash"`
-	ParentHash *string `json:"parentHash,omitempty"`
-	Author     ApiUser `json:"author"`
-	Text       string  `json:"text"`
-	// Add other fields as needed
-}
-
 // CastsResult represents a collection of casts
 type CastsResult struct {
 	Casts []CastContent `json:"casts"`
