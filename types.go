@@ -107,3 +107,18 @@ type CastsPostRequest struct {
 type CastsPostResponse struct {
 	Result CastContent `json:"result"`
 }
+
+// Add these new types to types.go
+
+type UsersResult struct {
+	Users []ApiUser `json:"users"`
+}
+
+type FollowingGetResponse struct {
+	Result struct {
+		Users []ApiUser `json:"users"`
+	} `json:"result"`
+	Next *struct {
+		Cursor string `json:"cursor"`
+	} `json:"next"`
+}
