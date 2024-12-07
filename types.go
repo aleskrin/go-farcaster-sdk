@@ -122,3 +122,13 @@ type FollowingGetResponse struct {
 		Cursor string `json:"cursor"`
 	} `json:"next"`
 }
+
+// FollowsPutRequest represents the request to follow a user
+type FollowsPutRequest struct {
+	TargetFid int `json:"targetFid"`
+}
+
+// StatusResponse represents the response from a follow operation
+type StatusResponse struct {
+	Result StatusContent `json:"result"`
+}
