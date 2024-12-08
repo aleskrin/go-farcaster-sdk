@@ -5,6 +5,13 @@ import (
 	"fmt"
 )
 
+// GetAllFollowing retrieves all following for a user
+// Parameters:
+//   - fid: The FID of the user to retrieve following for
+//
+// Returns:
+//   - *UsersResult: A collection of users
+//   - error: Any error that occurred
 func (w *Warpcast) GetAllFollowing(fid *int) (*UsersResult, error) {
 	// If fid is nil, use authenticated user's fid
 	userFid := fid

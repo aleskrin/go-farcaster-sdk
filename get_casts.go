@@ -1,9 +1,9 @@
 package farcaster
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
-	"encoding/json"
 )
 
 type IterableCastsResult struct {
@@ -29,8 +29,13 @@ type CastsGetResponse struct {
 }
 
 // GetCasts retrieves casts for a given FID (Farcaster ID) of a user
-// fid: Farcaster ID of the user
-// limit: Number of casts to retrieve (default 25, max 100)
+//   - fid: Farcaster ID of the user
+//   - cursor: Cursor to start from (optional)
+//   - limit: Number of casts to retrieve (default 25, max 100)
+//
+// Returns:
+//   - *IterableCastsResult: A collection of casts
+//   - error: Any error that occurred
 func (c *Warpcast) GetCasts(fid int, cursor *string, limit int) (*IterableCastsResult, error) {
 	if limit <= 0 {
 		limit = 25

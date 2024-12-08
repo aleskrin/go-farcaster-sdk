@@ -21,6 +21,14 @@ type FollowersResponse struct {
 }
 
 // GetFollowers retrieves followers for a user with pagination
+// Parameters:
+//   - fid: Farcaster ID of the user
+//   - cursor: Cursor to start from (optional)
+//   - limit: Number of followers to retrieve (default 25, max 100)
+//
+// Returns:
+//   - *IterableUsersResult: A collection of users
+//   - error: Any error that occurred
 func (w *Warpcast) GetFollowers(fid int, cursor *string, limit int) (*IterableUsersResult, error) {
 	if limit <= 0 {
 		limit = 25

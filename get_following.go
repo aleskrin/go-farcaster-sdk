@@ -5,9 +5,16 @@ import (
 	"fmt"
 )
 
-// GetAllFollowing gets all users that a given FID is following
+// GetFollowing gets all users that a given FID is following
 // If fid is nil, it gets the following list for the authenticated user
-func (w *Warpcast) GetAllFollowing(fid *int) (*UsersResult, error) {
+//
+// Parameters:
+//   - fid: Farcaster ID of the user
+//
+// Returns:
+//   - *UsersResult: A collection of users
+//   - error: Any error that occurred
+func (w *Warpcast) GetFollowing(fid *int) (*UsersResult, error) {
 	var users []ApiUser
 	var cursor *string
 	limit := 100
@@ -18,7 +25,7 @@ func (w *Warpcast) GetAllFollowing(fid *int) (*UsersResult, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to get authenticated user: %w", err)
 		}
-		fid = &me.Fid
+		fid = &me.FID
 	}
 
 	for {

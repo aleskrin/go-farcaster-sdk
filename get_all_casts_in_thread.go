@@ -11,6 +11,12 @@ type CastsResult struct {
 }
 
 // GetAllCastsInThread retrieves all casts in a thread
+// Parameters:
+//   - threadHash: The hash of the thread to retrieve casts for
+//
+// Returns:
+//   - *CastsResult: A collection of casts
+//   - error: Any error that occurred
 func (w *Warpcast) GetAllCastsInThread(threadHash string) (*CastsResult, error) {
 	params := map[string]string{
 		"threadHash": threadHash,
