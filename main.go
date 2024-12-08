@@ -388,6 +388,3 @@ func (w *Warpcast) GetMe() (*ApiUser, error) {
 
 	return &result.Result, nil
 }
-
-
-</```rewritten_file>

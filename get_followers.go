@@ -1,16 +1,8 @@
+package farcaster
+
 import (
 	"fmt"
 )
-
-// ApiUser represents a user from the API
-type ApiUser struct {
-	// Add necessary fields here
-}
-
-// UsersResult represents a collection of users
-type UsersResult struct {
-	Users []ApiUser `json:"users"`
-}
 
 // IterableUsersResult represents a paginated collection of users
 type IterableUsersResult struct {
@@ -29,7 +21,7 @@ type FollowersResponse struct {
 }
 
 // GetFollowers retrieves followers for a user with pagination
-func (c *Client) GetFollowers(fid int, cursor *string, limit int) (*IterableUsersResult, error) {
+func (w *Warpcast) GetFollowers(fid int, cursor *string, limit int) (*IterableUsersResult, error) {
 	if limit <= 0 {
 		limit = 25
 	}
@@ -39,6 +31,7 @@ func (c *Client) GetFollowers(fid int, cursor *string, limit int) (*IterableUser
 
 	users := make([]ApiUser, 0)
 	currentCursor := cursor
+	var response FollowersResponse
 	
 	for {
 		params := map[string]interface{}{
@@ -47,8 +40,7 @@ func (c *Client) GetFollowers(fid int, cursor *string, limit int) (*IterableUser
 			"limit":  limit,
 		}
 		
-		var response FollowersResponse
-		if err := c.get("followers", params, &response); err != nil {
+		if err := w.get("followers", params, &response); err != nil {
 			return nil, fmt.Errorf("failed to get followers: %w", err)
 		}
 
