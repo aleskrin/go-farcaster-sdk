@@ -19,13 +19,6 @@ type ApiCast struct {
 	Text       string   `json:"text"`
 }
 
-type ApiUser struct {
-	Fid       int    `json:"fid"`
-	Username  string `json:"username"`
-	DisplayName string `json:"displayName"`
-	PfpUrl    string `json:"pfpUrl"`
-}
-
 type CastsGetResponse struct {
 	Result struct {
 		Casts []ApiCast `json:"casts"`

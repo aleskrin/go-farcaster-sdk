@@ -108,7 +108,13 @@ type CastsPostResponse struct {
 	Result CastContent `json:"result"`
 }
 
-// Add these new types to types.go
+// ApiUser represents a Farcaster user
+type ApiUser struct {
+	FID         int    `json:"fid"`
+	Username    string `json:"username"`
+	DisplayName string `json:"displayName"`
+	// Add other fields as needed
+}
 
 type UsersResult struct {
 	Users []ApiUser `json:"users"`
@@ -131,4 +137,9 @@ type FollowsPutRequest struct {
 // StatusResponse represents the response from a follow operation
 type StatusResponse struct {
 	Result StatusContent `json:"result"`
+}
+
+// FollowsDeleteRequest represents the request to unfollow a user
+type FollowsDeleteRequest struct {
+	TargetFid int `json:"targetFid"`
 }
