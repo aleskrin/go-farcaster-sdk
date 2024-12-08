@@ -1,39 +1,19 @@
-package main
+package farcaster
 
 import (
 	"encoding/json"
+	"fmt"
 )
 
-type Client struct {
-	// Add relevant fields and methods for the Client struct
-}
-
-type UsersResult struct {
-	Users []ApiUser `json:"users"`
-}
-
-type FollowingGetResponse struct {
-	Result struct {
-		Users []ApiUser `json:"users"`
-	} `json:"result"`
-	Next *struct {
-		Cursor string `json:"cursor"`
-	} `json:"next"`
-}
-
-type ApiUser struct {
-	// Add relevant fields based on your API response
-}
-
-func (c *Client) GetAllFollowing(fid *int) (*UsersResult, error) {
+func (w *Warpcast) GetAllFollowing(fid *int) (*UsersResult, error) {
 	// If fid is nil, use authenticated user's fid
 	userFid := fid
 	if userFid == nil {
-		me, err := c.GetMe()
+		me, err := w.GetMe()
 		if err != nil {
 			return nil, err
 		}
-		userFid = &me.Fid
+		userFid = &me.FID
 	}
 
 	var users []ApiUser
@@ -47,9 +27,9 @@ func (c *Client) GetAllFollowing(fid *int) (*UsersResult, error) {
 			"cursor": cursor,
 		}
 
-		response, err := c.get("following", params)
+		response, err := w.request("GET", "following", nil, params, nil)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to get following: %w", err)
 		}
 
 		var followingResponse FollowingGetResponse
