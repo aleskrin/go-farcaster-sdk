@@ -388,3 +388,23 @@ func (w *Warpcast) GetMe() (*ApiUser, error) {
 
 	return &result.Result, nil
 }
+
+// main function to demonstrate calling getMe
+func main() {
+	// Create a new Warpcast client
+	client, err := NewWarpcast()
+	if (err != nil) {
+		fmt.Println("Error creating Warpcast client:", err)
+		return
+	}
+
+	// Call the getMe function
+	user, err := client.GetMe()
+	if (err != nil) {
+		fmt.Println("Error getting user info:", err)
+		return
+	}
+
+	// Print the authenticated user's username
+	fmt.Println("Authenticated user:", user.Username)
+}
