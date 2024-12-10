@@ -16,7 +16,7 @@ func (w *Warpcast) GetAllFollowing(fid *int) (*UsersResult, error) {
 	// If fid is nil, use authenticated user's fid
 	userFid := fid
 	if userFid == nil {
-		me, err := w.GetMe()
+		me, err := w.getMe()
 		if err != nil {
 			return nil, err
 		}

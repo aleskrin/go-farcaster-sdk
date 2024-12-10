@@ -371,20 +371,3 @@ func (w *Warpcast) GetCast(hash string) (*CastContent, error) {
 
 	return &result.Result, nil
 }
-
-// GetMe retrieves the authenticated user's information
-func (w *Warpcast) GetMe() (*ApiUser, error) {
-	resp, err := w.request("GET", "me", nil, nil, nil)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get user info: %w", err)
-	}
-
-	var result struct {
-		Result ApiUser `json:"result"`
-	}
-	if err := json.Unmarshal(resp, &result); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal user response: %w", err)
-	}
-
-	return &result.Result, nil
-}

@@ -21,7 +21,7 @@ func (w *Warpcast) GetFollowing(fid *int) (*UsersResult, error) {
 
 	// If fid is nil, get the authenticated user's FID
 	if fid == nil {
-		me, err := w.GetMe()
+		me, err := w.getMe()
 		if err != nil {
 			return nil, fmt.Errorf("failed to get authenticated user: %w", err)
 		}
