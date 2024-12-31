@@ -2,39 +2,57 @@ package tests
 
 import (
 	"testing"
-	"your_project_name/models" // adjust this import path based on your project structure
+	"github.com/warpcast/warpcast-go/pkg/farcaster"
 )
 
 func TestGetCasts(t *testing.T) {
+	client := farcaster.NewWarpcast() // You'll need to implement this constructor
+
 	tests := []struct {
 		name    string
-		movieID int
+		fid     int
+		cursor  *string
+		limit   int
 		wantLen int
 		wantErr bool
 	}{
 		{
-			name:    "Valid movie ID",
-			movieID: 550, // Fight Club as example
-			wantLen: 10,  // Expecting at least 10 cast members
+			name:    "Valid FID with default limit",
+			fid:     1,
+			cursor:  nil,
+			limit:   0, // Should default to 25
+			wantLen: 25,
 			wantErr: false,
 		},
 		{
-			name:    "Invalid movie ID",
-			movieID: -1,
+			name:    "Valid FID with custom limit",
+			fid:     1,
+			cursor:  nil,
+			limit:   10,
+			wantLen: 10,
+			wantErr: false,
+		},
+		{
+			name:    "Invalid FID",
+			fid:     -1,
+			cursor:  nil,
+			limit:   25,
 			wantLen: 0,
 			wantErr: true,
 		},
 		{
-			name:    "Non-existent movie ID",
-			movieID: 999999999,
-			wantLen: 0,
-			wantErr: true,
+			name:    "Exceeding max limit",
+			fid:     1,
+			cursor:  nil,
+			limit:   150, // Should be capped at 100
+			wantLen: 100,
+			wantErr: false,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			casts, err := models.GetCasts(tt.movieID)
+			result, err := client.GetCasts(tt.fid, tt.cursor, tt.limit)
 
 			// Check error expectation
 			if (err != nil) != tt.wantErr {
@@ -42,69 +60,68 @@ func TestGetCasts(t *testing.T) {
 				return
 			}
 
-			// Check result length for valid cases
-			if !tt.wantErr && len(casts) < tt.wantLen {
-				t.Errorf("GetCasts() got %d casts, want at least %d", len(casts), tt.wantLen)
+			if err != nil {
+				return
 			}
 
-			// For valid cases, check that cast members have required fields
-			if !tt.wantErr && len(casts) > 0 {
-				firstCast := casts[0]
-				if firstCast.Name == "" {
-					t.Error("GetCasts() first cast member has empty name")
+			// Check result length
+			if len(result.Casts) != tt.wantLen {
+				t.Errorf("GetCasts() got %d casts, want %d", len(result.Casts), tt.wantLen)
+			}
+
+			// Validate cast structure
+			if len(result.Casts) > 0 {
+				firstCast := result.Casts[0]
+				if firstCast.Hash == "" {
+					t.Error("GetCasts() first cast has empty hash")
 				}
-				if firstCast.Character == "" {
-					t.Error("GetCasts() first cast member has empty character")
+				if firstCast.Author.Fid == 0 {
+					t.Error("GetCasts() first cast has invalid author FID")
 				}
-				if firstCast.ProfilePath == "" {
-					t.Error("GetCasts() first cast member has empty profile path")
+				if firstCast.Text == "" {
+					t.Error("GetCasts() first cast has empty text")
 				}
 			}
 		})
 	}
 }
 
-func TestGetCastsIntegration(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration test")
-	}
+func TestGetCastsPagination(t *testing.T) {
+	client := farcaster.NewWarpcast()
+	fid := 1
+	limit := 10
 
-	// Test with a known movie (Fight Club)
-	movieID := 550
-	casts, err := models.GetCasts(movieID)
-
+	// First request
+	result1, err := client.GetCasts(fid, nil, limit)
 	if err != nil {
-		t.Fatalf("GetCasts() failed with error: %v", err)
+		t.Fatalf("First GetCasts() failed: %v", err)
 	}
 
-	// Verify we got some cast members
-	if len(casts) == 0 {
-		t.Error("GetCasts() returned empty cast list for Fight Club")
+	if len(result1.Casts) != limit {
+		t.Errorf("Expected %d casts, got %d", limit, len(result1.Casts))
 	}
 
-	// Check for specific cast members we know should be in Fight Club
-	foundBradPitt := false
-	foundEdwardNorton := false
+	// If there's no cursor, we can't test pagination
+	if result1.Cursor == nil {
+		t.Skip("No cursor returned, skipping pagination test")
+	}
 
-	for _, cast := range casts {
-		switch cast.Name {
-		case "Brad Pitt":
-			foundBradPitt = true
-			if cast.Character != "Tyler Durden" {
-				t.Errorf("Expected Brad Pitt to play 'Tyler Durden', got '%s'", cast.Character)
-			}
-		case "Edward Norton":
-			foundEdwardNorton = true
-			if cast.Character != "The Narrator" {
-				t.Errorf("Expected Edward Norton to play 'The Narrator', got '%s'", cast.Character)
+	// Second request with cursor
+	result2, err := client.GetCasts(fid, result1.Cursor, limit)
+	if err != nil {
+		t.Fatalf("Second GetCasts() failed: %v", err)
+	}
+
+	if len(result2.Casts) != limit {
+		t.Errorf("Expected %d casts in second page, got %d", limit, len(result2.Casts))
+	}
+
+	// Verify we got different casts
+	for i, cast1 := range result1.Casts {
+		for j, cast2 := range result2.Casts {
+			if cast1.Hash == cast2.Hash {
+				t.Errorf("Found duplicate cast (page1[%d] == page2[%d]): %s", i, j, cast1.Hash)
 			}
 		}
-	}
-
-	if !foundBradPitt {
-		t.Error("Brad Pitt not found in Fight Club cast")
-	}
-	if !foundEdwardNorton {
-		t.Error("Edward Norton not found in Fight Club cast")
 	}
 }
